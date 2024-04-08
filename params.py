@@ -9,6 +9,7 @@ _FLOAT_AS_INTEGER = [
     'RestingBP',
     'Cholesterol',
     'MaxHR',
+    'nb',
     
 ]
 _FLOAT_ONE = [
