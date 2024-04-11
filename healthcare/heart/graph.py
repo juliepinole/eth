@@ -5,6 +5,80 @@ import seaborn as sns
 from pandas.api.types import is_string_dtype
 from pandas.api.types import is_numeric_dtype
 
+
+# Inspired from https://github.com/yohann84L/plot_metric/blob/master/plot_metric/functions.py
+def custom_roc_curve(
+        fpr,
+        tpr,
+        thresholds_values,
+        thresholds_to_plot: list = [0.5],
+        figsize: tuple = (7, 7),
+        fontsize: dict = {
+            'ax_title': 12,
+        },
+        dataset_type: str = 'train',
+        auc_performance: float = None,
+        c_roc_curve='black',
+        c_random_guess='red',
+        c_thresh_lines='black',
+        ls_roc_curve='-',
+        ls_thresh_lines=':',
+        ls_random_guess='--',
+        loc_legend='lower right',
+        plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.2,
+):
+
+    fig, ax = plt.subplots(figsize=figsize, squeeze=True)
+    ax.set_title(
+        f'ROC curve, AUC = {auc_performance:.2f}, dataset = {dataset_type}', fontsize=fontsize['ax_title']
+        )
+
+    # Plot roc curve
+    ax.plot(fpr, tpr, color=c_roc_curve,
+                lw=linewidth, label=f'ROC curve (area = {auc_performance:.2f})', linestyle=ls_roc_curve)
+
+    # Plot reference line
+    ax.plot([0, 1], [0, 1], color=c_random_guess, lw=linewidth, linestyle=ls_random_guess, label="Random guess")
+
+    # Plot Thresholds
+    if plot_threshold:
+        for t in thresholds_to_plot:
+            # Compute the y & x axis to trace the threshold
+            idx_thresh, idy_thresh = (
+                fpr[np.argmin(abs(thresholds_values - t))],
+                tpr[np.argmin(abs(thresholds_values - t))]
+            )
+            # Plot vertical and horizontal line
+            plt.axhline(y=idy_thresh, color=c_thresh_lines, linestyle=ls_thresh_lines, lw=linewidth)
+            plt.axvline(x=idx_thresh, color=c_thresh_lines, linestyle=ls_thresh_lines, lw=linewidth)
+            # Plot text threshold
+            if idx_thresh > 0.5 and idy_thresh > 0.5:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
+                            s='Threshold : {:.1f}'.format(t))
+            elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
+                            s='Threshold : {:.1f}'.format(t))
+            elif idx_thresh <= 0.5 < idy_thresh:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
+                            s='Threshold : {:.1f}'.format(t))
+            elif idx_thresh > 0.5 >= idy_thresh:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
+                            s='Threshold : {:.1f}'.format(t))
+
+            # Plot redpoint of threshold on the ROC curve
+            plt.plot(idx_thresh, idy_thresh, 'ro')
+
+    ax.set_xlabel('False Positive Rate')
+    ax.set_ylabel('True Positive Rate')
+    # manipulate
+    vals = ax.get_yticks()
+    ax.set_yticklabels(['{:,.0%}'.format(x) for x in vals], fontsize=9)
+    vals = ax.get_xticks()
+    ax.set_xticklabels(['{:,.0%}'.format(x) for x in vals], fontsize=9)
+    ax.legend(loc=loc_legend)
+    
+
+
 def dist_mult_plots(
     df: pd.DataFrame(),
     cols: list = ['Age'],

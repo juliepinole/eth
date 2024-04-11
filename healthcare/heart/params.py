@@ -25,10 +25,14 @@ _FLOAT_FOUR = [
 _PERCENT_ZERO = [
 ]
 _PERCENT_ONE = [
+    'Accuracy',
+    'Balanced Accuracy',
+    'F1 Score',
 ]
 _PERCENT_TWO = [
 ]
 _PERCENT_THREE = [
+
 ]
 _PERCENT_FOUR = [
 ]
