@@ -5,12 +5,38 @@ from sklearn.model_selection import train_test_split
 from collections import namedtuple
 import torch
 import torch.nn.functional as F
+from sklearn.preprocessing import LabelEncoder
 
+
+def encode_categorical_features(
+        df: pd.DataFrame,
+        categorical_features: list,
+) ->tuple[pd.DataFrame,dict]:
+    '''
+    Encode the categorical features of the dataset.
+    :param df: pd.DataFrame: the dataset
+    :param categorical_features: list: categorical features
+    :return: pd.DataFrame: encoded dataset
+    '''
+    label_encoders = {}
+    for cat_col in categorical_features:
+        # TODO(jpinole): is it ok to use an encoder designed for labels and not features?
+        label_encoders[cat_col] = LabelEncoder()
+        df[cat_col] = label_encoders[cat_col].fit_transform(df[cat_col])
+    return df, label_encoders
+
+        
 
 def standardize_features(
     df: pd.DataFrame,
     cols_to_standardize: list = None,
-):
+) -> pd.DataFrame:
+    '''
+    Standardize the features of the dataset.
+    :param df: pd.DataFrame: the dataset
+    :param cols_to_standardize: list: columns to standardize
+    :return: pd.DataFrame: standardized dataset
+    '''
     scaler = MinMaxScaler()
     if cols_to_standardize is None:
         untouched_columns = list(df.columns)
@@ -46,11 +72,14 @@ def pre_process_features(
         categorical_features: list,
         label_col: str = 'HeartDisease',
         add_one_hot_encoded: bool = False,
+        add_embeddings: bool = False,
         stand_features: bool = False,
+        stand_embeddings: bool = False,
         test_size: float = 0.2,
         random_state: int = 42,
         category_to_drop: dict = None,
         split_data: bool = True,
+        max_emb_dim: int = 50,
 ):
     """
     Pre-process the features of the dataset.
@@ -66,8 +95,26 @@ def pre_process_features(
     :param split_data: bool: whether to split data into train and test
     :return: namedtuple: train_test_results, categorical_features
     """
+    if add_embeddings and add_one_hot_encoded:
+        raise ValueError("You cannot add embeddings and one-hot encoded columns at the same time.")
+    
+    # Step 0: Encode categorical features
+    label_encoders = {}
+    emb_dims = []
+    if add_embeddings:
+        print('adding embeddings')
+        df, label_encoders = encode_categorical_features(df, categorical_features)
+        df_x = df[num_features + categorical_features].copy()
+        all_features = num_features + categorical_features
+        cat_dims = [int(df_x[col].nunique()) for col in categorical_features]
+        # TODO(jpinole): check if this is the best way to calculate the embedding dimensions
+        emb_dims = [(x, min(max_emb_dim, (x + 1) // 2)) for x in cat_dims]
+        df_x_cat = df_x[categorical_features]
+        df_x_num = df_x[num_features].astype(np.float32)
+    
     # Step 1: Adding One-Hot_Encoded columns
-    if add_one_hot_encoded:
+    elif add_one_hot_encoded:
+        print('adding One Hot Encoded')
         df_x, categorical_features, all_features = adding_one_hot_encoded(
             df[num_features + categorical_features],
             categorical_features,
@@ -75,46 +122,81 @@ def pre_process_features(
             category_to_drop=category_to_drop,
             drop_first=False,
             )
+        df_x_cat = None
+        df_x_num = df_x.astype(np.float32) # After OHE, categorical features have become numerical
+
     else:
         df_x = df[num_features].copy()
+        df_x_cat = None
+        df_x_num = df_x.astype(np.float32).copy()
         all_features = num_features
 
     # Step 2: Standardizing features
     if stand_features:
-        df_x = standardize_features(df_x, cols_to_standardize=all_features)
+        df_x_num = standardize_features(df_x_num, cols_to_standardize=df_x_num.columns)
+    if stand_embeddings:
+        df_x_cat = standardize_features(df_x_cat, cols_to_standardize=df_x_cat.columns)
+    if df_x_cat is not None:
+        df_x = pd.concat([df_x_num, df_x_cat], axis=1)
+    else:
+        df_x = df_x_num
     
     # Step 3: Split test/ train
     if split_data:
-        X_train_0, X_test_0, y_train_0, y_test_0 = train_test_split(
+        x_train_0, x_test_0, y_train_0, y_test_0 = train_test_split(
         df_x, df[label_col], test_size=test_size, random_state=random_state)
     else:
-        X_train_0 = df_x
-        X_test_0 = np.zeros(1)
+        x_train_0 = df_x
         y_train_0 = df[label_col]
-        y_test_0 = np.zeros(1)
+    
     # Organize data in a dictionary
-    data_dataframes = {
-        'X_train': X_train_0,
-        'X_test': X_test_0,
-        'y_train': y_train_0,
-        'y_test': y_test_0,
-    }
+    if split_data:
+        data_dataframes = {
+            'X_train': {
+                'num': x_train_0[num_features],
+                'cat': x_train_0[categorical_features],
+                'all': x_train_0,  
+            },
+            'X_test': {
+                'num': x_test_0[num_features],
+                'cat': x_test_0[categorical_features],
+                'all': x_test_0,  
+            },
+            'y_train': y_train_0,
+            'y_test': y_test_0,
+        }
+    else:
+        data_dataframes = {
+            'X_train': {
+                'num': x_train_0[num_features],
+                'cat': x_train_0[categorical_features],
+                'all': x_train_0,  
+            },
+            'y_train': y_train_0,
+        }
+
 
     # Step 4: Create Tensors
+    x_train_dict = {}
+    x_test_dict = {}
+    y_train = torch.Tensor(y_train_0.to_numpy())
+    for features_type, df in data_dataframes['X_train'].items():
+        # x_train_dict[features_type] = torch.Tensor(df.to_numpy())
+        x_train_dict[features_type] = torch.from_numpy(df.to_numpy())
+
     if split_data:
-        X_train, X_test = torch.Tensor(X_train_0.to_numpy()),torch.Tensor(X_test_0.to_numpy())
-        y_train, y_test = torch.Tensor(y_train_0.to_numpy()),torch.Tensor(y_test_0.to_numpy())
+        y_test = torch.Tensor(y_test_0.to_numpy())
+        for features_type, df in data_dataframes['X_test'].items():
+            x_test_dict[features_type] = torch.from_numpy(df.to_numpy())
         data_tensors = {
-            'X_train': X_train,
-            'X_test': X_test,
+            'X_train': x_train_dict,
+            'X_test': x_test_dict,
             'y_train': y_train,
             'y_test': y_test,
         }
     else:
-        X_train = torch.Tensor(X_train_0.to_numpy())
-        y_train = torch.Tensor(y_train_0.to_numpy())
         data_tensors = {
-            'X_train': X_train,
+            'X_train': x_train_dict,
             'y_train': y_train,
         }
 
@@ -124,4 +206,8 @@ def pre_process_features(
         dataframes=data_dataframes,
         tensors=data_tensors,
         )
-    return train_test_results, categorical_features
+    return (
+        train_test_results,
+        categorical_features,
+        {'label_encoders': label_encoders, 'emb_dims': emb_dims}
+        )
