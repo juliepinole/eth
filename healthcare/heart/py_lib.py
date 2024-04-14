@@ -57,7 +57,9 @@ def adding_one_hot_encoded(
         # drop_one_category: bool = False,
         ):
     # We set drop_first=False when we want to select manually which dummy column to drop, to have a benchmark that makes sense.
+    print(df['Sex'].unique())
     df_hot = pd.get_dummies(df, columns=cols_obj_pure, drop_first=drop_first)
+    print(list(df_hot.columns))
     if category_to_drop is not None:
         for var, category in category_to_drop.items():
             df_hot.drop('_'.join([var, category]), axis=1, inplace=True)
@@ -97,14 +99,14 @@ def pre_process_features(
     """
     if add_embeddings and add_one_hot_encoded:
         raise ValueError("You cannot add embeddings and one-hot encoded columns at the same time.")
-    
+    print(df['Sex'].unique())
     # Step 0: Encode categorical features
     label_encoders = {}
     emb_dims = []
     if add_embeddings:
         print('adding embeddings')
-        df, label_encoders = encode_categorical_features(df, categorical_features)
-        df_x = df[num_features + categorical_features].copy()
+        df_aux, label_encoders = encode_categorical_features(df, categorical_features)
+        df_x = df_aux[num_features + categorical_features].copy()
         all_features = num_features + categorical_features
         cat_dims = [int(df_x[col].nunique()) for col in categorical_features]
         # TODO(jpinole): check if this is the best way to calculate the embedding dimensions
@@ -145,9 +147,11 @@ def pre_process_features(
     if split_data:
         x_train_0, x_test_0, y_train_0, y_test_0 = train_test_split(
         df_x, df[label_col], test_size=test_size, random_state=random_state)
+        print(list(x_train_0.columns))
     else:
         x_train_0 = df_x
         y_train_0 = df[label_col]
+        print(list(x_train_0.columns))
     
     # Organize data in a dictionary
     if split_data:
@@ -209,5 +213,6 @@ def pre_process_features(
     return (
         train_test_results,
         categorical_features,
+        all_features,
         {'label_encoders': label_encoders, 'emb_dims': emb_dims}
         )
