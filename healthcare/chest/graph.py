@@ -4,6 +4,47 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas.api.types import is_string_dtype
 from pandas.api.types import is_numeric_dtype
+import random
+
+
+def images_subplots(
+        img_data: list,
+        ncols: int = 2,
+        nrows: int = 2,
+        figsize: tuple = (10, 10),
+        list_all_labels: list = None,
+        labels: list = ['Pneumonia', 'Normal'],
+        labels_mapping: dict = {
+            'Pneumonia': 0,
+            'Normal': 1,
+        }
+
+):
+    fig, axs = plt.subplots(
+        nrows=nrows,
+        ncols=ncols,
+        figsize=figsize,
+        squeeze=False,
+    )
+    count_labels = pd.Series(list_all_labels).value_counts()
+    index_pneumonia = [i for i, n in enumerate(list_all_labels) if n == 'Pneumonia']
+    index_normal = [i for i, n in enumerate(list_all_labels) if n == 'Normal']
+    index_outcomes = {
+        'Pneumonia': index_pneumonia,
+        'Normal': index_normal,
+    }
+    for col_idx, outcome in enumerate(labels):
+        n_imgs = count_labels[outcome]
+        items_to_plot = random.sample(range(0,n_imgs), nrows)
+        print(f'items_to_plot are {items_to_plot}')
+        for row_idx, item in enumerate(items_to_plot):
+            i, j = row_idx, col_idx
+            axs[i,j].imshow(img_data[index_outcomes[outcome][item]][0], cmap='gray')
+            axs[i,j].axis('off')
+            axs[i,j].set_title(outcome)
+
+    fig.tight_layout()
+    fig.show()
 
 
 # Inspired from https://github.com/yohann84L/plot_metric/blob/master/plot_metric/functions.py
