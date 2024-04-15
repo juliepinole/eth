@@ -124,6 +124,7 @@ def plot_img_attributions(
   cmap=None,
   overlay_alpha=0.4,
   figsize=(8, 8),
+  suptitle=None,
   ):
   attributions = integrated_gradients(
      model=model,
@@ -157,6 +158,9 @@ def plot_img_attributions(
   axs[1, 1].imshow(attribution_mask, cmap=cmap)
   axs[1, 1].imshow(image, alpha=overlay_alpha)
   axs[1, 1].axis('off')
+  
+  if suptitle is not None:
+    plt.suptitle(suptitle)
 
   plt.tight_layout()
   return fig, attribution_mask
