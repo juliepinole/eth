@@ -14,11 +14,6 @@ def images_subplots(
         figsize: tuple = (10, 10),
         list_all_labels: list = None,
         labels: list = ['Pneumonia', 'Normal'],
-        labels_mapping: dict = {
-            'Pneumonia': 0,
-            'Normal': 1,
-        }
-
 ):
     fig, axs = plt.subplots(
         nrows=nrows,
