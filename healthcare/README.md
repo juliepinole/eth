@@ -1,14 +1,17 @@
 # healthcare
 
-Notebooks by questions
+# Notebooks by questions
 
-*  Heart Disease
-    *  healthcare/heart/Heart_explo_and Logistic.ipynb
-    *  healthcare/heart/Heart_MLP.ipynb
-*  Chest Xrays
-    *  healthcare/chest/Chest_explo_and_cnn.ipynb
-    *  healthcare/chest/Chest_interpretability.ipynb
+##  Heart Disease
+*  **Q1, Q2**: healthcare/heart/Heart_explo_and Logistic.ipynb
+*  **Q3**: healthcare/heart/Heart_MLP.ipynb
+*  **Q4**: healthcare/heart/Heart_explo_NAM
+##  Chest Xrays
+*  **Q1, Q2**: healthcare/chest/Chest_explo_and_cnn.ipynb
+*  **Q3, Q4**: healthcare/chest/Chest_interpretability.ipynb
 
 
-*  Input data for Chest x_rays
-*  Also...
+# Data import in notebooks
+
+# Parameters
+
