@@ -4,4 +4,6 @@ This repository is still WIP and does not comply with Python style guidelines. I
 
 ## README for Project 1
 
-The README for Project 1 is [here](https://github.com/juliepinole/eth/tree/main/healthcare) in the Healthcare subfolder.
+> [!IMPORTANT]
+> The README for Project 1 is [here](https://github.com/juliepinole/eth/tree/main/healthcare) in the Healthcare subfolder.
+
