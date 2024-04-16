@@ -82,6 +82,12 @@ def pre_process_features(
         category_to_drop: dict = None,
         split_data: bool = True,
         max_emb_dim: int = 50,
+        replace_pb_values: dict = {
+            'Cholesterol': {
+                'target_to_replace': 0,
+                'replacement_method': 'median',
+            }
+        },
 ):
     """
     Pre-process the features of the dataset.
@@ -97,15 +103,34 @@ def pre_process_features(
     :param split_data: bool: whether to split data into train and test
     :return: namedtuple: train_test_results, categorical_features
     """
+
     if add_embeddings and add_one_hot_encoded:
         raise ValueError("You cannot add embeddings and one-hot encoded columns at the same time.")
-    print(df['Sex'].unique())
+    
+    df_aux = df.copy()
+    # Step -1: Replace problematic values
+    if replace_pb_values is not None:
+        for feature, dic_feat in replace_pb_values.items():
+            if dic_feat['replacement_method'] == 'median':
+                subset_for_comput = df_aux[feature].copy()
+                pb_val = dic_feat['target_to_replace']
+                print(
+                    f'Before: Number of rows with problematic value: {subset_for_comput[subset_for_comput == pb_val].shape}'
+                    )
+                no_pb_rows = subset_for_comput[subset_for_comput != dic_feat['target_to_replace']]
+                replacement_value = np.median(no_pb_rows).astype(int)
+                df_aux[feature] = df_aux[feature].replace({dic_feat['target_to_replace']: replacement_value})
+                print(
+                    f'After: Number of rows with problematic value: {df_aux[feature][df_aux[feature] == pb_val].shape}'
+                    )
+
+
     # Step 0: Encode categorical features
     label_encoders = {}
     emb_dims = []
     if add_embeddings:
         print('adding embeddings')
-        df_aux, label_encoders = encode_categorical_features(df, categorical_features)
+        df_aux, label_encoders = encode_categorical_features(df_aux, categorical_features)
         df_x = df_aux[num_features + categorical_features].copy()
         all_features = num_features + categorical_features
         cat_dims = [int(df_x[col].nunique()) for col in categorical_features]
@@ -118,7 +143,7 @@ def pre_process_features(
     elif add_one_hot_encoded:
         print('adding One Hot Encoded')
         df_x, categorical_features, all_features = adding_one_hot_encoded(
-            df[num_features + categorical_features],
+            df_aux[num_features + categorical_features],
             categorical_features,
             num_features = num_features,
             category_to_drop=category_to_drop,
