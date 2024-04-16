@@ -15,9 +15,11 @@
 ## Data import in notebooks
 
 * **Heart Disease**: there is no action required, the relevant csv files are in the same folder as the notebookds and are imported through pd.read_csv().
-* **Chest Xrays**: [ACTION REQUIRED]. The path to the data have to be filled as the first argument of the function lib.get_training_data() as in orange in the image below:
+> [!IMPORTANT]
+> * **Chest Xrays**: [ACTION REQUIRED]. The path to the data have to be filled as the first argument of the function lib.get_training_data() as in orange in the image below:
+>   ![alt text](image.png)
 
-![alt text](image.png)
+
 
 Data folders need to have the same structure as in the initial dataset. From the path filled above, two folders need to be present:
 
