@@ -11,6 +11,13 @@
 *  **Q1, Q2**: [Chest_explo_and_cnn](https://github.com/juliepinole/eth/blob/main/healthcare/chest/Chest_explo_and_cnn.ipynb)
 *  **Q3, Q4**: [Chest_interpretability](https://github.com/juliepinole/eth/blob/main/healthcare/chest/Chest_interpretability.ipynb)
 
+## Virtual Environment
+
+> [!IMPORTANT]
+> The result of `pip list` in the virtual environment that I used in in the file [venv.txt](https://github.com/juliepinole/eth/blob/main/healthcare/venv.txt).
+
+> [!NOTE]
+> I made some changes to some [SHAP](https://shap.readthedocs.io/en/latest/) package core code that I did not manage to revert. I thus created a second virtual environment to reinstall [SHAP](https://shap.readthedocs.io/en/latest/) and to run the SHAP section of the [Heart_MLP](https://github.com/juliepinole/eth/blob/main/healthcare/heart/Heart_MLP.ipynb) notebook. `pip list` outcome in the file [venv_2.txt](https://github.com/juliepinole/eth/blob/main/healthcare/venv_2.txt) However I doubt there is any difference with the main environment [venv.txt](https://github.com/juliepinole/eth/blob/main/healthcare/venv.txt) which is what I used everywhere (except that [venv_2.txt](https://github.com/juliepinole/eth/blob/main/healthcare/venv_2.txt) is a strict subset of [venv.txt](https://github.com/juliepinole/eth/blob/main/healthcare/venv.txt). I just installed there the few packages needed to run the section of interest. I thus think it can be ignored.
 
 ## Data import in notebooks
 
