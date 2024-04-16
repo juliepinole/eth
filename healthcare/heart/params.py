@@ -23,6 +23,8 @@ _FLOAT_THREE = [
 _FLOAT_FOUR = [  
 ]
 _PERCENT_ZERO = [
+    '0',
+    '1',
 ]
 _PERCENT_ONE = [
     'Accuracy',
