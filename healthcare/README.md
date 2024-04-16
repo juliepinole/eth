@@ -20,11 +20,12 @@
 >   ![alt text](image.png)
 
 
+> [!IMPORTANT]
+> Data folders need to have the same structure as in the initial dataset. From the path filled above, two folders need to be present:
+>
+> *  PNEUMONIA: with the examples of xrays from patients suffering from pneumonia.
+> *  NORMAL: with the examples of xrays from healthy patients.
 
-Data folders need to have the same structure as in the initial dataset. From the path filled above, two folders need to be present:
-
-*  PNEUMONIA: with the examples of xrays from patients suffering from pneumonia.
-*  NORMAL: with the examples of xrays from healthy patients.
 
 ## Parameters
 
